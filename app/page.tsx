@@ -1,4 +1,3 @@
-"use client";
 import Map from "../components/ui/dialog/map";
 
 export default function App() {
