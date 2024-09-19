@@ -14,7 +14,7 @@ import { socket } from '@/app/socket'; // Ensure this is correctly set up
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet'; // Import Leaflet for types
 import { Button } from "../button";
- 
+
 const MapContainer = dynamic(() => import('react-leaflet').then(mod => mod.MapContainer), { ssr: false });
 const TileLayer = dynamic(() => import('react-leaflet').then(mod => mod.TileLayer), { ssr: false });
 const Marker = dynamic(() => import('react-leaflet').then(mod => mod.Marker), { ssr: false });
@@ -29,25 +29,29 @@ const Map = () => {
     const [locations, setLocations] = useState<Location[]>([]);
     const [userLocation, setUserLocation] = useState<Location | null>(null);
     const mapRef = useRef<L.Map | null>(null);
+    
     const customIcon = L.icon({
-        iconUrl: "location.png", 
-        iconSize: [30, 50], 
-        iconAnchor: [12, 41], 
-        popupAnchor: [1, -34], 
+        iconUrl: 'location.png',
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
     });
 
     useEffect(() => {
-        socket.on('locationUpdate', (location: Location) => {
-            setLocations((prevLocations) => {
-                const updatedLocations = prevLocations.filter((loc) => loc.id !== location.id);
-                updatedLocations.push(location);
-                return updatedLocations;
+        if (typeof window !== "undefined") {
+            // Only execute this code in the browser
+            socket.on('locationUpdate', (location: Location) => {
+                setLocations((prevLocations) => {
+                    const updatedLocations = prevLocations.filter((loc) => loc.id !== location.id);
+                    updatedLocations.push(location);
+                    return updatedLocations;
+                });
             });
-        });
 
-        return () => {
-            socket.off('locationUpdate');
-        };
+            return () => {
+                socket.off('locationUpdate');
+            };
+        }
     }, []);
 
     const sendLocation = (id: string, lat: number, lng: number) => {
@@ -58,7 +62,7 @@ const Map = () => {
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition((position) => {
                 const { latitude, longitude } = position.coords;
-                const id = 'user1'; // This should be unique for each user
+                const id = 'user1';
                 sendLocation(id, latitude, longitude);
                 setUserLocation({ id, lat: latitude, lng: longitude });
             }, (error) => {
@@ -70,33 +74,14 @@ const Map = () => {
     };
 
     useEffect(() => {
-        const id = 'user1'; // This should be unique for each user
-        const interval = setInterval(() => {
-            const lat = Math.random() * 90; // Replace with real location
-            const lng = Math.random() * 180; // Replace with real location
-            sendLocation(id, lat, lng);
-        }, 5000);
-
-        return () => clearInterval(interval);
-    }, []);
-
-    // Update the map view when userLocation changes
-    useEffect(() => {
-        if (userLocation && mapRef.current) {
-            mapRef.current.setView([userLocation.lat, userLocation.lng], 13); // Focus on user location
-        }
-    }, [userLocation]);
-
-    // Get user's live location and set initial view
-    useEffect(() => {
         getLiveLocation();
     }, []);
 
     return (
         <Dialog>
             <DialogTrigger asChild>
-                <Button variant="outline" className="px-4 py-2 rounded ">
-                    Get location
+                <Button variant="outline">
+                    Get Live Location
                 </Button>
             </DialogTrigger>
             <DialogContent>
