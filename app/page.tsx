@@ -11,7 +11,9 @@ export default function App() {
     )
   }
   return (
-    
-    <Map/>
+    <div className=' flex items-center justify-center mt-40'>
+        <Map/>
+    </div>
+  
   );
 }
