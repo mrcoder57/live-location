@@ -1,4 +1,4 @@
-import Map from "../components/ui/dialog/map";
+import Map from "./component/dialog/map";
 
 export default function App() {
   return (
