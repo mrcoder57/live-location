@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { useEffect, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
-import { socket } from "@/app/socket"; // Client-side socket import
+import { io, Socket } from "socket.io-client"; // Import Socket type for TypeScript
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet'; 
 import { Button } from "../../../components/ui/button";
@@ -28,6 +28,7 @@ interface Location {
 const Map = () => {
     const [locations, setLocations] = useState<Location[]>([]);
     const [userLocation, setUserLocation] = useState<Location | null>(null);
+    const [socket, setSocket] = useState<Socket | null>(null); // Manage socket state
     const mapRef = useRef<L.Map | null>(null);
     
     const customIcon = L.icon({
@@ -38,8 +39,11 @@ const Map = () => {
     });
 
     useEffect(() => {
-        if (typeof window !== "undefined" && socket) {
-            socket.on('locationUpdate', (location: Location) => {
+        if (typeof window !== "undefined") {
+            const socketInstance = io(); // Create socket instance
+            setSocket(socketInstance); // Store socket instance in state
+
+            socketInstance.on('locationUpdate', (location: Location) => {
                 setLocations((prevLocations) => {
                     const updatedLocations = prevLocations.filter((loc) => loc.id !== location.id);
                     updatedLocations.push(location);
@@ -48,7 +52,8 @@ const Map = () => {
             });
 
             return () => {
-                socket.off('locationUpdate');
+                socketInstance.off('locationUpdate'); // Clean up socket events
+                socketInstance.disconnect(); // Optionally disconnect the socket
             };
         }
     }, []);
