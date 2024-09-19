@@ -10,9 +10,9 @@ import {
 } from "@/components/ui/dialog";
 import { useEffect, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
-import { socket } from '@/app/socket'; // Ensure this is correctly set up
+import { socket } from "@/app/socket"; // Client-side socket import
 import 'leaflet/dist/leaflet.css';
-import L from 'leaflet'; // Import Leaflet for types
+import L from 'leaflet'; 
 import { Button } from "../../../components/ui/button";
 
 const MapContainer = dynamic(() => import('react-leaflet').then(mod => mod.MapContainer), { ssr: false });
@@ -38,24 +38,25 @@ const Map = () => {
     });
 
     useEffect(() => {
-        // Ensure this code runs only in the browser
-        if (typeof window !== "undefined") {
-          socket.on('locationUpdate', (location: Location) => {
-            setLocations((prevLocations) => {
-              const updatedLocations = prevLocations.filter((loc) => loc.id !== location.id);
-              updatedLocations.push(location);
-              return updatedLocations;
+        if (typeof window !== "undefined" && socket) {
+            socket.on('locationUpdate', (location: Location) => {
+                setLocations((prevLocations) => {
+                    const updatedLocations = prevLocations.filter((loc) => loc.id !== location.id);
+                    updatedLocations.push(location);
+                    return updatedLocations;
+                });
             });
-          });
-    
-          return () => {
-            socket.off('locationUpdate');
-          };
+
+            return () => {
+                socket.off('locationUpdate');
+            };
         }
-      }, []);
+    }, []);
 
     const sendLocation = (id: string, lat: number, lng: number) => {
-        socket.emit('locationUpdate', { id, lat, lng });
+        if (socket) {
+            socket.emit('locationUpdate', { id, lat, lng });
+        }
     };
 
     const getLiveLocation = () => {
