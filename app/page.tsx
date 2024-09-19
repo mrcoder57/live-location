@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { socket } from "./socket";
+import Map from "../components/ui/dialog/map";
 
 export default function Home() {
   const [isConnected, setIsConnected] = useState(false);
@@ -37,9 +38,8 @@ export default function Home() {
   }, []);
 
   return (
-    <div>
-      <p>Status: { isConnected ? "connected" : "disconnected" }</p>
-      <p>Transport: { transport }</p>
-    </div>
+   <div className=" flex items-center justify-center mt-52">
+   <Map/>
+   </div>
   );
 }
