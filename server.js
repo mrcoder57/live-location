@@ -16,7 +16,13 @@ app.prepare().then(() => {
 
   io.on("connection", (socket) => {
     console.log("connect  to socket",socket.id)
-    socket.emit("hello", "world");
+    socket.on('locationUpdate', (location) => {
+      socket.broadcast.emit('locationUpdate', location);
+    });
+
+    socket.on('disconnect', () => {
+      console.log('user disconnected');
+    });
   });
 
   httpServer
